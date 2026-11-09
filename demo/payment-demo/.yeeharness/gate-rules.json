@@ -1,0 +1,4 @@
+{
+  "description": "业务层规约(R-xxx)。由 yeeHarness 进化捕获在 Owner 审批后追加，交付门禁每次运行都会读取。",
+  "rules": []
+}

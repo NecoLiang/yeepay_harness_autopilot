@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yeeHarness Autopilot</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --soft:#f6f8fa; --ok:#1a7f37; --bad:#cf222e; --accent:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --soft:#151b23; --ok:#3fb950; --bad:#f85149; --accent:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; font:15px/1.6 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color:var(--fg); background:var(--bg); }
+main { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px; }
+h1 { font-size: 28px; margin: 0 0 6px; } h2 { font-size: 20px; margin: 40px 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.lead { color: var(--muted); margin: 0 0 24px; }
+.flow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.flow span { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:6px 10px; }
+.flow i { color:var(--muted); font-style:normal; }
+.figures { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
+.figure { border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+.figure b { display:block; font-size:24px; } .figure small { color:var(--muted); }
+table { width:100%; border-collapse:collapse; font-size:14px; } th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:600; } .ok { color:var(--ok); } .bad { color:var(--bad); }
+.note { color:var(--muted); font-size:13px; } a { color:var(--accent); }
+</style></head>
+<body><main>
+<h1>yeeHarness Autopilot</h1>
+<p class=lead>团队在飞书群里 @它提需求；它按 yeeHarness 支付研发流程把活干完，PR 过了门禁才交付，并把这次踩的坑变成下一次的门禁。</p>
+<div class=flow><span>飞书 @机器人</span><i>→</i><span>准入 + 授权</span><i>→</i><span>判定场景</span><i>→</i><span>yeeHarness 流程</span><i>→</i><span>交付门禁</span><i>→</i><span>GitHub PR</span><i>→</i><span>飞书交付</span><i>→</i><span>进化审批</span></div>
+<h2>交付门禁基准（可复现）</h2><div class=figures><div class="figure"><b>21</b><small>用例数</small></div><div class="figure"><b>100%</b><small>错误写法拦截率</small></div><div class="figure"><b>0%</b><small>正确改动误拦率</small></div><div class="figure"><b>100%</b><small>判定正确率</small></div></div><table><tr><th>用例</th><th>规则</th><th>期望</th><th>实际</th><th>命中</th><th>测试</th><th></th></tr><tr><td>double 计算分账（原始缺陷写法）</td><td>P-001</td><td>block</td><td>block</td><td>P-001</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>BigDecimal 用 double 字面量构造</td><td>P-001</td><td>block</td><td>block</td><td>P-001</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>setScale 未指定舍入模式</td><td>P-001</td><td>block</td><td>block</td><td>P-001</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>金额用 equals 比较</td><td>P-001</td><td>block</td><td>block</td><td>P-001</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>float 承载手续费</td><td>P-001</td><td>block</td><td>block</td><td>P-001</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>金额空值兜底为 0</td><td>P-002</td><td>block</td><td>block</td><td>P-002</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>Optional 兜底为 0</td><td>P-002</td><td>block</td><td>block</td><td>P-002</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>日志明文打印卡号</td><td>P-007</td><td>block</td><td>block</td><td>P-007</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>遗留未归类 TODO</td><td>G-003</td><td>block</td><td>block</td><td>G-003</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>遗留 UnsupportedOperationException 骨架</td><td>G-003</td><td>block</td><td>block</td><td>G-003</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>修复后测试未通过</td><td>tests</td><td>block</td><td>block</td><td>—</td><td>失败</td><td class=ok>✓</td></tr><tr><td>违反进化出的业务规则 R-001</td><td>R-001</td><td>block</td><td>block</td><td>R-001</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>R-001 加入前的同一写法</td><td>R-001</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>正确修复：尾差归最后一方 + 测试</td><td>tests</td><td>pass</td><td>pass</td><td>—</td><td>通过</td><td class=ok>✓</td></tr><tr><td>正确修复（仅静态规则）</td><td>P-001</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>compareTo 比较金额</td><td>P-001</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>空值快速失败</td><td>P-002</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>脱敏后打印卡号</td><td>P-007</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>已归类的骨架 [骨架:依赖]</td><td>G-003</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>测试代码里使用 double</td><td>P-001</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr><tr><td>仅修改文档</td><td>docs</td><td>pass</td><td>pass</td><td>—</td><td>未运行</td><td class=ok>✓</td></tr></table><p class=note>用例覆盖 yeeHarness 规约针对的典型错误写法与对应正确写法，度量规则是否按设计生效，不代表任意代码库的检出率。复现：<code>python bench/run_bench.py</code></p>
+<h2>飞书实跑数据</h2><p class=note>尚无实跑工单。完成实跑后运行 <code>python scripts/collect_metrics.py && python scripts/render_report.py</code> 自动填充。</p>
+</main></body></html>

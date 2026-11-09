@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.coverage
+dist/
+autopilot.config.json
+demo/payment-demo/target/
+.DS_Store

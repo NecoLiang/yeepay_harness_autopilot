@@ -1,0 +1,293 @@
+{
+  "summary": {
+    "cases": 21,
+    "accuracy": 1.0,
+    "block_rate_on_mistakes": 1.0,
+    "false_block_rate_on_correct": 0.0,
+    "per_rule": {
+      "P-001": {
+        "cases": 8,
+        "correct": 8
+      },
+      "P-002": {
+        "cases": 3,
+        "correct": 3
+      },
+      "P-007": {
+        "cases": 2,
+        "correct": 2
+      },
+      "G-003": {
+        "cases": 3,
+        "correct": 3
+      },
+      "tests": {
+        "cases": 2,
+        "correct": 2
+      },
+      "R-001": {
+        "cases": 2,
+        "correct": 2
+      },
+      "docs": {
+        "cases": 1,
+        "correct": 1
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "double 计算分账（原始缺陷写法）",
+      "rule": "P-001",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-001"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "BigDecimal 用 double 字面量构造",
+      "rule": "P-001",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-001"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "setScale 未指定舍入模式",
+      "rule": "P-001",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-001"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "金额用 equals 比较",
+      "rule": "P-001",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-001"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "float 承载手续费",
+      "rule": "P-001",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-001"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "金额空值兜底为 0",
+      "rule": "P-002",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-002"
+      ],
+      "tests": "未运行",
+      "seconds": 0.06,
+      "note": ""
+    },
+    {
+      "name": "Optional 兜底为 0",
+      "rule": "P-002",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-002"
+      ],
+      "tests": "未运行",
+      "seconds": 0.06,
+      "note": ""
+    },
+    {
+      "name": "日志明文打印卡号",
+      "rule": "P-007",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "P-007"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "遗留未归类 TODO",
+      "rule": "G-003",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "G-003"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "遗留 UnsupportedOperationException 骨架",
+      "rule": "G-003",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "G-003"
+      ],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "修复后测试未通过",
+      "rule": "tests",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [],
+      "tests": "失败",
+      "seconds": 1.59,
+      "note": ""
+    },
+    {
+      "name": "违反进化出的业务规则 R-001",
+      "rule": "R-001",
+      "expect": "block",
+      "verdict": "block",
+      "correct": true,
+      "findings": [
+        "R-001"
+      ],
+      "tests": "未运行",
+      "seconds": 0.06,
+      "note": "同样代码在 R-001 未加入前会通过，见下一条"
+    },
+    {
+      "name": "R-001 加入前的同一写法",
+      "rule": "R-001",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": "证明 R-001 的拦截来自进化出的业务规则，而非内置规则"
+    },
+    {
+      "name": "正确修复：尾差归最后一方 + 测试",
+      "rule": "tests",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "通过",
+      "seconds": 1.54,
+      "note": ""
+    },
+    {
+      "name": "正确修复（仅静态规则）",
+      "rule": "P-001",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.06,
+      "note": ""
+    },
+    {
+      "name": "compareTo 比较金额",
+      "rule": "P-001",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "空值快速失败",
+      "rule": "P-002",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "脱敏后打印卡号",
+      "rule": "P-007",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "已归类的骨架 [骨架:依赖]",
+      "rule": "G-003",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "测试代码里使用 double",
+      "rule": "P-001",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    },
+    {
+      "name": "仅修改文档",
+      "rule": "docs",
+      "expect": "pass",
+      "verdict": "pass",
+      "correct": true,
+      "findings": [],
+      "tests": "未运行",
+      "seconds": 0.05,
+      "note": ""
+    }
+  ]
+}

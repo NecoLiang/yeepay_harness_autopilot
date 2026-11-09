@@ -1,0 +1,29 @@
+name: ci
+on:
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: yeeHarness delivery gate (rules + tests)
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # Gate script and business rules come from the base branch, so a PR cannot weaken the gate that checks it.
+          git show "$BASE:.yeeharness/yh_verify.py" > "$RUNNER_TEMP/yh_verify.py"
+          rules=()
+          if git show "$BASE:.yeeharness/gate-rules.json" > "$RUNNER_TEMP/gate-rules.json" 2>/dev/null; then
+            rules=(--rules "$RUNNER_TEMP/gate-rules.json")
+          fi
+          python3 "$RUNNER_TEMP/yh_verify.py" --base "$BASE" "${rules[@]}" --markdown gate-report.md
+      - name: Publish gate report
+        if: always()
+        run: if [ -f gate-report.md ]; then cat gate-report.md >> "$GITHUB_STEP_SUMMARY"; fi
