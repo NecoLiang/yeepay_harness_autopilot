@@ -1,0 +1,30 @@
+{
+  "collected_at": "2026-11-10T15:40:36+08:00",
+  "summary": {
+    "tickets": 1,
+    "ready_or_done": 1,
+    "states": {
+      "ready": 1
+    },
+    "median_minutes_to_ready": 3.3,
+    "agent_messages_per_ticket": 4.0,
+    "human_messages_per_ticket": 2.0,
+    "cost_usd_per_ticket": 2.2,
+    "gate_blocks_total": 0
+  },
+  "tickets": [
+    {
+      "ticket_id": "T1110-bbf1f5",
+      "title": "清算对账发现分账合计和订单金额对不上：0.10 元的订单三方按 0.3333/0.3333/0.3334 分账，合计只有",
+      "created_at": "2026-11-10T15:34:09+08:00",
+      "state": "ready",
+      "minutes_to_ready": 3.3,
+      "agent_messages": 4,
+      "human_messages": 2,
+      "claude_runs": 3,
+      "cost_usd": 2.2,
+      "gate_blocks": 0,
+      "pr_url": ""
+    }
+  ]
+}

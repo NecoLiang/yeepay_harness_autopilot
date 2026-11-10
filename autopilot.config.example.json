@@ -1,13 +1,24 @@
 {
-  "port": 3082,
-  "repository": "<agent-login>/payment-demo",
-  "githubCli": "~/.local/bin/gh-agent",
-  "feishuCli": "~/.local/bin/lark-bot",
-  "chats": [
-    { "chatId": "oc_xxxxxxxxxxxxxxxx", "name": "yeeHarness Autopilot 演示群", "listen": "mentions" }
-  ],
-  "syncChat": "oc_xxxxxxxxxxxxxxxx",
-  "feishuAllowed": [],
   "checkout": "~/src/payment-demo",
-  "maxWorkers": 2
+  "stateDir": "~/.yeeharness-autopilot",
+  "baseBranch": "main",
+  "claudeBin": "claude",
+  "claudeModel": "",
+  "claudeTimeoutSeconds": 2700,
+  "claudeBudgetUsd": 15,
+  "maxWorkers": 2,
+  "maxGateRounds": 2,
+  "commitName": "yeeHarness Autopilot",
+  "commitEmail": "<agent-id>+<agent-login>@users.noreply.github.com",
+  "feishu": {
+    "cli": "~/.local/bin/lark-bot",
+    "chats": ["oc_xxxxxxxxxxxxxxxx"],
+    "syncChat": "oc_xxxxxxxxxxxxxxxx",
+    "allowed": [],
+    "directMessages": false
+  },
+  "github": {
+    "cli": "~/.local/bin/gh-agent",
+    "repository": "<agent-login>/payment-demo"
+  }
 }

@@ -1,0 +1,182 @@
+diff --git a/.yeeharness/gate-rules.json b/.yeeharness/gate-rules.json
+index 462b20e..d60a583 100644
+--- a/.yeeharness/gate-rules.json
++++ b/.yeeharness/gate-rules.json
+@@ -1,4 +1,11 @@
+ {
+   "description": "业务层规约(R-xxx)。由 yeeHarness 进化捕获在 Owner 审批后追加，交付门禁每次运行都会读取。",
+-  "rules": []
++  "rules": [
++    {
++      "id": "R-001",
++      "severity": "block",
++      "title": "分账份额禁止逐方独立舍入，尾差必须由一方承接",
++      "pattern": "new\\s+SplitShare\\([^;]*\\.setScale\\("
++    }
++  ]
+ }
+diff --git a/AGENTS.md b/AGENTS.md
+index bed8c44..09cda87 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -24,3 +24,5 @@
+ ## 业务层规约（R-xxx）
+ 
+ <!-- 由进化捕获追加，编号只增不复用 -->
++
++- **R-001**（block）分账份额禁止逐方独立舍入，尾差必须由一方承接：除承接方外各方舍入到分，承接方 = 订单金额 − 其余各方之和（当前约定由规则中最后一方承接）。门禁会拦截在 `new SplitShare(...)` 里直接 `setScale(...)` 的写法。来源：T1110 分账合计与订单金额不一致。
+diff --git a/src/main/java/com/yeepay/demo/split/SplitCalculator.java b/src/main/java/com/yeepay/demo/split/SplitCalculator.java
+index ed05af5..0083fc3 100644
+--- a/src/main/java/com/yeepay/demo/split/SplitCalculator.java
++++ b/src/main/java/com/yeepay/demo/split/SplitCalculator.java
+@@ -2,29 +2,55 @@ package com.yeepay.demo.split;
+ 
+ import com.yeepay.demo.common.Money;
+ import java.math.BigDecimal;
++import java.math.RoundingMode;
++import java.util.ArrayList;
+ import java.util.List;
+ 
+ /**
+  * Splits an order amount among merchants by ratio.
+  *
+  * <p>Callers rely on one invariant: the shares always add up to the order amount, so the clearing
+- * system can settle the order without a difference.
++ * system can settle the order without a difference. Every share except the last is rounded half-up
++ * to the cent; the last party in rule order takes the remainder, which absorbs the rounding
++ * difference.
+  */
+ public final class SplitCalculator {
+ 
++    private static final RoundingMode SHARE_ROUNDING = RoundingMode.HALF_UP;
++
+     /** Returns one share per rule, in rule order. */
+     public List<SplitShare> split(BigDecimal orderAmount, List<SplitRule> rules) {
+-        Money.requireValid(orderAmount, "orderAmount");
++        BigDecimal amount = Money.requireValid(orderAmount, "orderAmount");
++        requireRatiosSumToOne(rules);
++
++        int lastIndex = rules.size() - 1;
++        List<SplitShare> shares = new ArrayList<>(rules.size());
++        BigDecimal allocated = BigDecimal.ZERO;
++        for (SplitRule rule : rules.subList(0, lastIndex)) {
++            BigDecimal share = amount.multiply(rule.ratio()).setScale(Money.SCALE, SHARE_ROUNDING);
++            shares.add(new SplitShare(rule.merchantNo(), share));
++            allocated = allocated.add(share);
++        }
++        shares.add(new SplitShare(rules.get(lastIndex).merchantNo(), remainderFor(amount, allocated)));
++        return List.copyOf(shares);
++    }
++
++    private static void requireRatiosSumToOne(List<SplitRule> rules) {
+         if (rules == null || rules.isEmpty()) {
+             throw new IllegalArgumentException("rules must not be empty");
+         }
+-        double total = orderAmount.doubleValue();
+-        return rules.stream()
+-                .map(rule -> {
+-                    double share = total * rule.ratio().doubleValue();
+-                    double rounded = Math.round(share * 100) / 100.0;
+-                    return new SplitShare(rule.merchantNo(), BigDecimal.valueOf(rounded).setScale(Money.SCALE));
+-                })
+-                .toList();
++        BigDecimal ratioSum = rules.stream().map(SplitRule::ratio).reduce(BigDecimal.ZERO, BigDecimal::add);
++        if (ratioSum.compareTo(BigDecimal.ONE) != 0) {
++            throw new IllegalArgumentException("split ratios must add up to 1, but add up to " + ratioSum);
++        }
++    }
++
++    private static BigDecimal remainderFor(BigDecimal amount, BigDecimal allocated) {
++        BigDecimal remainder = amount.subtract(allocated);
++        if (remainder.signum() < 0) {
++            throw new IllegalArgumentException(
++                    "order amount " + amount + " is too small to split: rounded shares already take " + allocated);
++        }
++        return remainder;
+     }
+ }
+diff --git a/src/test/java/com/yeepay/demo/split/SplitCalculatorTest.java b/src/test/java/com/yeepay/demo/split/SplitCalculatorTest.java
+index cd7ebf2..d9d06b3 100644
+--- a/src/test/java/com/yeepay/demo/split/SplitCalculatorTest.java
++++ b/src/test/java/com/yeepay/demo/split/SplitCalculatorTest.java
+@@ -31,6 +31,80 @@ class SplitCalculatorTest {
+         assertEquals(new BigDecimal("8.00"), shares.get(1).amount());
+     }
+ 
++    @Test
++    void sharesAddUpToOrderAmountWhenRoundingLosesACent() {
++        BigDecimal orderAmount = new BigDecimal("0.10");
++
++        List<SplitShare> shares = calculator.split(orderAmount, threeWayRules());
++
++        assertEquals(orderAmount, sum(shares));
++    }
++
++    @Test
++    void sharesAddUpToOrderAmountWhenRoundingGainsACent() {
++        BigDecimal orderAmount = new BigDecimal("1999.99");
++
++        List<SplitShare> shares = calculator.split(orderAmount, threeWayRules());
++
++        assertEquals(orderAmount, sum(shares));
++    }
++
++    @Test
++    void lastPartyAbsorbsTheRoundingDifference() {
++        List<SplitShare> lost = calculator.split(new BigDecimal("0.10"), threeWayRules());
++        List<SplitShare> gained = calculator.split(new BigDecimal("1999.99"), threeWayRules());
++
++        assertEquals(List.of(new BigDecimal("0.03"), new BigDecimal("0.03"), new BigDecimal("0.04")), amounts(lost));
++        assertEquals(List.of(new BigDecimal("666.60"), new BigDecimal("666.60"), new BigDecimal("666.79")),
++                amounts(gained));
++    }
++
++    @Test
++    void sharesAddUpToOrderAmountAcrossManyAmounts() {
++        for (int cents = 0; cents <= 100_000; cents += 7) {
++            BigDecimal orderAmount = BigDecimal.valueOf(cents, 2);
++
++            assertEquals(orderAmount, sum(calculator.split(orderAmount, threeWayRules())), orderAmount.toString());
++        }
++    }
++
++    @Test
++    void singlePartyTakesWholeAmount() {
++        List<SplitShare> shares = calculator.split(new BigDecimal("12.34"), List.of(new SplitRule("M001", BigDecimal.ONE)));
++
++        assertEquals(new BigDecimal("12.34"), shares.get(0).amount());
++    }
++
++    @Test
++    void rejectsRatiosThatDoNotAddUpToOne() {
++        assertThrows(IllegalArgumentException.class, () -> calculator.split(new BigDecimal("1.00"), List.of(
++                new SplitRule("M001", new BigDecimal("0.5")),
++                new SplitRule("M002", new BigDecimal("0.4")))));
++    }
++
++    @Test
++    void rejectsAmountTooSmallForLastPartyToStayNonNegative() {
++        assertThrows(IllegalArgumentException.class, () -> calculator.split(new BigDecimal("0.01"), List.of(
++                new SplitRule("M001", new BigDecimal("0.5")),
++                new SplitRule("M002", new BigDecimal("0.5")),
++                new SplitRule("M003", BigDecimal.ZERO))));
++    }
++
++    private static List<BigDecimal> amounts(List<SplitShare> shares) {
++        return shares.stream().map(SplitShare::amount).toList();
++    }
++
++    private static List<SplitRule> threeWayRules() {
++        return List.of(
++                new SplitRule("M001", new BigDecimal("0.3333")),
++                new SplitRule("M002", new BigDecimal("0.3333")),
++                new SplitRule("M003", new BigDecimal("0.3334")));
++    }
++
++    private static BigDecimal sum(List<SplitShare> shares) {
++        return shares.stream().map(SplitShare::amount).reduce(BigDecimal.ZERO, BigDecimal::add);
++    }
++
+     @Test
+     void rejectsNullOrderAmount() {
+         assertThrows(IllegalArgumentException.class,

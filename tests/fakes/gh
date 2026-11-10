@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Stand-in for the agent's gh: git credentials are not needed for a file:// remote; PR calls are recorded.
+echo "$@" >> "${FAKE_GH_LOG:?}"
+case "$1 $2" in
+  "auth git-credential") exit 0 ;;
+  "pr create") echo "https://github.com/agent/payment-demo/pull/1" ;;
+  "pr view") echo "true" ;;
+  *) exit 0 ;;
+esac

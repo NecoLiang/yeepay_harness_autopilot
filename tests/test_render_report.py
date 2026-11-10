@@ -10,9 +10,10 @@ BENCH = {"summary": {"cases": 2, "accuracy": 1.0, "block_rate_on_mistakes": 1.0,
                     "findings": ["P-001"], "tests": "未运行", "correct": True}]}
 LIVE = {"collected_at": "2026-11-10T10:00:00+08:00",
         "summary": {"tickets": 1, "ready_or_done": 1, "median_minutes_to_ready": 42.0,
-                    "agent_messages_per_ticket": 2, "human_messages_per_ticket": 1},
-        "tickets": [{"title": "分账差一分", "outcome": "completed", "minutes_to_ready": 42.0,
-                     "agent_messages": 2, "human_messages": 1}]}
+                    "agent_messages_per_ticket": 2, "human_messages_per_ticket": 1, "gate_blocks_total": 1,
+                    "cost_usd_per_ticket": 3.5},
+        "tickets": [{"title": "分账差一分", "state": "ready", "minutes_to_ready": 42.0, "agent_messages": 2,
+                     "human_messages": 1, "gate_blocks": 1, "cost_usd": 3.5, "pr_url": "https://example.com/demo/pull/1"}]}
 
 
 @pytest.mark.unit

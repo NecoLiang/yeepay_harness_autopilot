@@ -1,0 +1,3 @@
+cf1a736 chore: add business gate rule R-001 for split rounding remainder
+43032db fix: allocate split rounding difference to last party so shares sum to order amount
+45cdd25 test: reproduce split shares not adding up to order amount

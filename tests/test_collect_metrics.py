@@ -1,68 +1,41 @@
-"""Tests for metrics collection from a dsh-superagent store."""
+"""Tests for metrics collection from the autopilot store."""
 from __future__ import annotations
 
-import json
-import sqlite3
 from pathlib import Path
 
 import pytest
 
 import collect_metrics as metrics
-
-T0 = "2026-11-10T10:00:00.000+08:00"
-
-
-def ticket(tid: str, **extra: object) -> dict[str, object]:
-    return {"id": tid, "title": f"t{tid}", "createdAt": T0, "channels": [{"source": "feishu"}],
-            "assignments": [], "inputs": [], **extra}
+from autopilot.models import Ticket, TicketState
+from autopilot.store import Store
 
 
-def make_db(path: Path, tickets: list[dict[str, object]], outbox: list[dict[str, object]], decisions: list[str]) -> Path:
-    db = sqlite3.connect(path)
-    db.executescript("CREATE TABLE ticket (id TEXT, value TEXT); CREATE TABLE outbox (id TEXT, value TEXT);"
-                     "CREATE TABLE decision (id TEXT, thread TEXT, value TEXT);")
-    db.executemany("INSERT INTO ticket VALUES (?, ?)", [(t["id"], json.dumps(t)) for t in tickets])
-    db.executemany("INSERT INTO outbox VALUES (?, ?)", [(str(i), json.dumps(o)) for i, o in enumerate(outbox)])
-    db.executemany("INSERT INTO decision VALUES (?, '', ?)", [(str(i), json.dumps({"kind": k})) for i, k in enumerate(decisions)])
-    db.commit()
-    db.close()
-    return path
-
-
-@pytest.mark.unit
-def test_ready_at_prefers_first_ready_report() -> None:
-    t = ticket("1", assignments=[{"report": {"state": "ready", "at": "2026-11-10T10:30:00.000+08:00"}}],
-               ended={"at": "2026-11-10T11:00:00.000+08:00", "outcome": "merged"})
-    assert metrics.ready_at(t) == "2026-11-10T10:30:00.000+08:00"
-
-
-@pytest.mark.unit
-@pytest.mark.parametrize("extra, stage", [
-    ({}, "queued"),
-    ({"attention": {"question": "q"}}, "awaiting answer"),
-    ({"assignments": [{"report": {"state": "progress", "at": T0}}]}, "progress"),
-    ({"ended": {"at": T0, "outcome": "completed"}}, "ended"),
-])
-def test_stage_of(extra: dict[str, object], stage: str) -> None:
-    assert metrics.stage_of(ticket("1", **extra)) == stage
+def make_ticket(tid: str, state: TicketState) -> Ticket:
+    return Ticket(id=tid, thread_id=f"th-{tid}", chat_id="oc", origin_message_id="om", requester="ou",
+                  request="分账差一分" * 20, state=state, session_id="s", created_at="2026-11-10T10:00:00+08:00",
+                  updated_at="2026-11-10T10:00:00+08:00", pr_url="https://x/pr/1")
 
 
 @pytest.mark.integration
-def test_collect_counts_attention(tmp_path: Path) -> None:
-    done = ticket("1", ended={"at": "2026-11-10T10:42:00.000+08:00", "outcome": "completed"},
-                  inputs=[{"kind": "trigger", "human": True}, {"kind": "trigger", "human": True, "context": True},
-                          {"kind": "trigger"}], assignments=[{"id": "a"}])
-    db = make_db(tmp_path / "s.sqlite", [done, ticket("2")],
-                 [{"ticketId": "1", "status": "sent"}, {"ticketId": "1", "status": "pending"}, {"status": "sent"}],
-                 ["accept", "accept", "ignore"])
-    data = metrics.collect(db)
+def test_collect_counts_attention_and_cost(tmp_path: Path) -> None:
+    store = Store(tmp_path / "a.sqlite")
+    store.create(make_ticket("T1", TicketState.READY))
+    store.create(make_ticket("T2", TicketState.WAITING))
+    for kind, detail in [("bot_message", {}), ("claude_run", {"cost_usd": 1.25}), ("gate", {"verdict": "block"}),
+                         ("claude_run", {"cost_usd": 0.75}), ("gate", {"verdict": "pass"}),
+                         ("delivered", {"minutes": 12.5}), ("bot_message", {}), ("human_message", {})]:
+        store.log("T1", kind, **detail)
+    store.log("T2", "bot_message")
+    store.close()
+    data = metrics.collect(tmp_path / "a.sqlite")
     first = data["tickets"][0]
-    assert first["minutes_to_ready"] == 42.0
-    assert first["human_messages"] == 1 and first["agent_messages"] == 1
+    assert (first["minutes_to_ready"], first["agent_messages"], first["human_messages"]) == (12.5, 2, 1)
+    assert (first["claude_runs"], first["cost_usd"], first["gate_blocks"]) == (2, 2.0, 1)
+    assert len(first["title"]) == 60
     summary = data["summary"]
-    assert summary["tickets"] == 2 and summary["ready_or_done"] == 1
-    assert summary["decisions"] == {"accept": 2, "ignore": 1}
-    assert summary["outcomes"] == {"completed": 1, "open": 1}
+    assert summary["tickets"] == 2 and summary["ready_or_done"] == 1 and summary["median_minutes_to_ready"] == 12.5
+    assert summary["agent_messages_per_ticket"] == 1.5 and summary["gate_blocks_total"] == 1
+    assert summary["states"] == {"ready": 1, "waiting": 1}
 
 
 @pytest.mark.unit

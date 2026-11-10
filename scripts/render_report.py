@@ -74,29 +74,34 @@ def minutes(value: Any) -> str:
 
 def live_section(live: dict[str, Any] | None, repo_url: str) -> str:
     if live is None or not live["summary"]["tickets"]:
-        return ("<h2>飞书实跑数据</h2><p class=note>尚无实跑工单。完成实跑后运行 "
+        return ("<h2>实跑数据</h2><p class=note>尚无实跑工单。完成实跑后运行 "
                 "<code>python scripts/collect_metrics.py && python scripts/render_report.py</code> 自动填充。</p>")
     s = live["summary"]
     rows = "".join(
-        f"<tr><td>{escape(t['title'])}</td><td>{escape(t['outcome'])}</td><td>{escape(minutes(t['minutes_to_ready']))}</td>"
-        f"<td>{t['agent_messages']}</td><td>{t['human_messages']}</td></tr>" for t in live["tickets"])
+        f"<tr><td>{escape(t['title'])}</td><td>{escape(t['state'])}</td><td>{escape(minutes(t['minutes_to_ready']))}</td>"
+        f"<td>{t['agent_messages']}</td><td>{t['human_messages']}</td><td>{t['gate_blocks']}</td>"
+        f"<td>{'$%.2f' % t['cost_usd']}</td>"
+        f"<td>{('<a href=\"%s\">PR</a>' % escape(t['pr_url'])) if t['pr_url'] else '—'}</td></tr>" for t in live["tickets"])
     pulls = f'<p>全部 PR：<a href="{escape(repo_url)}/pulls?q=is%3Apr">{escape(repo_url)}/pulls</a></p>' if repo_url else ""
     return (
-        f"<h2>飞书实跑数据</h2><p class=note>采集于 {escape(live['collected_at'])}，来源：dsh-superagent 状态库（只读）</p>"
+        f"<h2>实跑数据</h2><p class=note>采集于 {escape(live['collected_at'])}，来源：Autopilot 状态库（只读）</p>"
         "<div class=figures>"
         + figure(str(s["tickets"]), "工单数")
         + figure(f"{s['ready_or_done']}/{s['tickets']}", "已交付 / 总数")
         + figure(minutes(s["median_minutes_to_ready"]), "需求到可评审 PR（中位数）")
         + figure(str(s["agent_messages_per_ticket"]), "每单机器人发言条数")
-        + figure(str(s["human_messages_per_ticket"]), "每单人工发言条数")
-        + "</div><table><tr><th>工单</th><th>结果</th><th>到可评审</th><th>机器人发言</th><th>人工发言</th></tr>"
+        + figure(str(s["human_messages_per_ticket"]), "每单人工追加发言")
+        + figure(str(s["gate_blocks_total"]), "门禁退回次数（未打扰人）")
+        + figure("$%.2f" % (s["cost_usd_per_ticket"] or 0), "每单模型成本")
+        + "</div><table><tr><th>工单</th><th>状态</th><th>到可评审</th><th>机器人发言</th><th>人工追加</th>"
+          "<th>门禁退回</th><th>成本</th><th></th></tr>"
         + rows + "</table>" + pulls)
 
 
 def render(bench: dict[str, Any] | None, live: dict[str, Any] | None, repo_url: str, demo_url: str) -> str:
     links = " · ".join(f'<a href="{escape(u)}">{escape(t)}</a>' for t, u in (("代码仓库", repo_url), ("演示仓库", demo_url)) if u)
     flow = "<i>→</i>".join(f"<span>{escape(x)}</span>" for x in (
-        "飞书 @机器人", "准入 + 授权", "判定场景", "yeeHarness 流程", "交付门禁", "GitHub PR", "飞书交付", "进化审批"))
+        "飞书 @机器人", "准入", "Claude Code 无头会话", "yeeHarness 技能", "交付门禁", "GitHub PR", "飞书交付", "进化审批"))
     return f"""<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>yeeHarness Autopilot</title><style>{STYLE}</style></head>

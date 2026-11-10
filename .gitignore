@@ -6,3 +6,4 @@ dist/
 autopilot.config.json
 demo/payment-demo/target/
 .DS_Store
+autopilot.local.json

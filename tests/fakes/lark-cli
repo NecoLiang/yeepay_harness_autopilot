@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Stand-in for lark-cli: canned bot info, members, events; records replies.
+case "$1 $2" in
+  "api GET") echo '{"bot":{"open_id":"ou_bot","app_name":"助手"}}' ;;
+  "im +chat-members-list") echo 'note' ; echo '{"users":[{"member_id":"ou_u","name":"张三"}],"has_more":false}' ;;
+  "im +messages-reply") echo "$@" >> "${FAKE_LARK_LOG:?}" ;;
+  "event consume") cat "${FAKE_LARK_EVENTS:?}"; echo "consumer gone" >&2; exit 3 ;;
+  "fail now") echo "boom" >&2; exit 5 ;;
+  *) echo "unexpected: $*" >&2; exit 9 ;;
+esac
