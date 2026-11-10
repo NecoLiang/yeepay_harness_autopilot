@@ -107,7 +107,7 @@ python scripts/render_report.py --repo-url <本仓库地址> --demo-url <演示�
 |---|---|
 | 本项目 | 本仓库（`yeeharness-autopilot`） |
 | 演示仓库 | `demo/payment-demo`，由 `scripts/go_live.sh` 发布到 `github.com/<agent 账号>/payment-demo` |
-| yeeHarness（方法论来源） | `gitlab.yeepay.com/yeehub/yeeharness`，本项目不改动它 |
+| yeeHarness（方法论来源） | 易宝内部仓库 yeehub/yeeharness（内网，不公开），本项目不改动它 |
 | dsh-superagent（编排层） | `github.com/deepseek-ai/dsh-superagent-prototype`（MIT） |
 
 ```
