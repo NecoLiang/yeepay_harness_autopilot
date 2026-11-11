@@ -67,7 +67,7 @@ DeepSeek 开源的 dsh-superagent 给出了另一种形态：AI 作为团队成�
 
 实跑也暴露了一个问题：Claude 在需求之外**顺手加了「比例合计不为 1 就报错」的校验**。它在 PR 的「影响面评估」里如实写明了这一点，但这仍然是没被要求的行为变化。为此已在系统提示词里补了一条约束：需求之外的行为变化只写进 PR 的「后续建议」，不直接改。
 
-Claude 写的 PR 描述、完整 diff、门禁报告和飞书话题记录都保存在 [evidence/](evidence/) 目录。
+实跑产出的 PR：[NecoLiang/payment-demo#1](https://github.com/NecoLiang/payment-demo/pull/1)。Claude 写的 PR 描述、完整 diff、门禁报告和话题记录也保存在 [evidence/](evidence/) 目录。
 
 复现方法：`python -m autopilot --config autopilot.local.json ask "<需求>"`，然后 `reply <工单号> "A"`；`python scripts/collect_metrics.py --db ~/.yeeharness-autopilot/autopilot.sqlite` 输出上面的指标。
 
@@ -85,7 +85,7 @@ Claude 写的 PR 描述、完整 diff、门禁报告和飞书话题记录都保�
 
 ### 3.3 工程质量
 
-- **102 个测试**全部通过，总覆盖率 **93%**（`.venv/bin/pytest --cov=autopilot --cov=gate --cov=scripts`）。测试包括：真实 git worktree 和真实门禁配合脚本化的 Claude；用假的 `claude`、`lark-cli`、`gh` 可执行文件加一个真实的 bare 远端，测试子进程适配层。
+- **103 个测试**全部通过，总覆盖率 **93%**（`.venv/bin/pytest --cov=autopilot --cov=gate --cov=scripts`）。测试包括：真实 git worktree 和真实门禁配合脚本化的 Claude；用假的 `claude`、`lark-cli`、`gh` 可执行文件加一个真实的 bare 远端，测试子进程适配层。
 - 一轮独立代码审查发现 10 个问题，已全部修复并补了回归测试。例如：`++i` 行被误认为文件头导致漏检；PR 可以修改 CI 自己的门禁。
 
 ### 3.4 飞书实跑（待操作员完成账号步骤后运行）
@@ -95,7 +95,8 @@ Claude 写的 PR 描述、完整 diff、门禁报告和飞书话题记录都保�
 ### 3.5 体验地址
 
 - 结果页：https://necoliang.github.io/yeepay_harness_autopilot/ （由 `site/index.html` 生成，包含门禁基准和实跑数据）
-- 演示仓库 `github.com/<agent 账号>/payment-demo`：包含 agent 提交的 PR 和门禁报告
+- 演示仓库：https://github.com/NecoLiang/payment-demo
+- **实跑产出的真实 PR**：https://github.com/NecoLiang/payment-demo/pull/1 （Claude 的 3 个提交：复现测试 → 修复 → 规则 R-001；PR 描述为 yeeHarness 交付卡加门禁报告；GitHub CI 用基线分支的门禁再跑一次，结果通过）
 - 飞书演示群：评委入群后 @机器人即可体验
 
 ## 4. 核心创新点
@@ -112,7 +113,7 @@ Claude 写的 PR 描述、完整 diff、门禁报告和飞书话题记录都保�
 | 内容 | 位置 |
 |---|---|
 | 本项目 | https://github.com/NecoLiang/yeepay_harness_autopilot |
-| 演示仓库 | `demo/payment-demo`，由 `scripts/go_live.sh` 发布到 `github.com/<agent 账号>/payment-demo` |
+| 演示仓库 | https://github.com/NecoLiang/payment-demo （模板在本仓库 `demo/payment-demo`） |
 | yeeHarness（方法论来源） | 易宝内部仓库 yeehub/yeeharness（内网，不公开），本项目不改动它 |
 | 设计参考 | [deepseek-ai/dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype)（MIT），借鉴了注意力原则、准入和话题订阅、结构化提问、诚实交付 |
 
@@ -132,7 +133,7 @@ yeepay_harness_autopilot/
 ├── bench/                门禁基准
 ├── demo/payment-demo/    脱敏分账服务（预埋缺陷、AGENTS.md、CI）
 ├── scripts/              上线、度量、结果页、演示仓初始化
-├── tests/                102 个测试（含 fakes/ 假的可执行文件）
+├── tests/                103 个测试（含 fakes/ 假的可执行文件）
 └── docs/                 架构、操作员步骤、演示脚本
 ```
 
@@ -140,7 +141,7 @@ yeepay_harness_autopilot/
 
 ```sh
 python3 -m venv .venv && .venv/bin/pip install pytest pytest-cov
-.venv/bin/pytest                                   # 102 个测试
+.venv/bin/pytest                                   # 103 个测试
 .venv/bin/python bench/run_bench.py                # 门禁基准
 bash scripts/init_demo_repo.sh ~/src/payment-demo  # 准备演示仓库
 cp autopilot.config.example.json autopilot.local.json   # 本地模式只需 checkout 一项

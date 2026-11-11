@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-11-10T15:40:36+08:00",
+  "collected_at": "2026-11-11T15:52:31+08:00",
   "summary": {
     "tickets": 1,
     "ready_or_done": 1,
@@ -24,7 +24,7 @@
       "claude_runs": 3,
       "cost_usd": 2.2,
       "gate_blocks": 0,
-      "pr_url": ""
+      "pr_url": "https://github.com/NecoLiang/payment-demo/pull/1"
     }
   ]
 }
