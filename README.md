@@ -94,7 +94,7 @@ Claude 写的 PR 描述、完整 diff、门禁报告和飞书话题记录都保�
 
 ### 3.5 体验地址
 
-- 结果页 `site/index.html`：由基准和实跑数据生成，部署到 GitHub Pages
+- 结果页：https://necoliang.github.io/yeepay_harness_autopilot/ （由 `site/index.html` 生成，包含门禁基准和实跑数据）
 - 演示仓库 `github.com/<agent 账号>/payment-demo`：包含 agent 提交的 PR 和门禁报告
 - 飞书演示群：评委入群后 @机器人即可体验
 
@@ -111,13 +111,13 @@ Claude 写的 PR 描述、完整 diff、门禁报告和飞书话题记录都保�
 
 | 内容 | 位置 |
 |---|---|
-| 本项目 | 本仓库 `yeeharness-autopilot` |
+| 本项目 | https://github.com/NecoLiang/yeepay_harness_autopilot |
 | 演示仓库 | `demo/payment-demo`，由 `scripts/go_live.sh` 发布到 `github.com/<agent 账号>/payment-demo` |
 | yeeHarness（方法论来源） | 易宝内部仓库 yeehub/yeeharness（内网，不公开），本项目不改动它 |
 | 设计参考 | [deepseek-ai/dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype)（MIT），借鉴了注意力原则、准入和话题订阅、结构化提问、诚实交付 |
 
 ```
-yeeharness-autopilot/
+yeepay_harness_autopilot/
 ├── autopilot/            编排器（约 1100 行，纯标准库）
 │   ├── feishu.py         lark-cli：事件流、成员、话题回复
 │   ├── admission.py      准入：群 + 名单 + @；话题内追加
