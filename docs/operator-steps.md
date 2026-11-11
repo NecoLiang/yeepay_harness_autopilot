@@ -8,6 +8,8 @@
 
 ## 1. GitHub agent 账号（约 5 分钟）
 
+> 也可以直接用你自己的账号：把 `~/.local/bin/gh-agent` 的内容改成 `exec gh "$@"`，PR 就会署你的名字。本次演示用的就是这种方式（NecoLiang）。
+
 1. 用一个新邮箱注册 GitHub 账号，例如 `yeeharness-bot`。PR 和提交都会署这个名字，所以不要用你自己的账号。
 2. 终端执行，**登录时选这个新账号**：
 

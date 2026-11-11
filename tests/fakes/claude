@@ -9,7 +9,7 @@ calc = pathlib.Path("src/main/java/com/yeepay/demo/split/SplitCalculator.java")
 text = calc.read_text(encoding="utf-8")
 if "double total = orderAmount.doubleValue();" in text:
     calc.write_text(text.replace("double total = orderAmount.doubleValue();", "BigDecimal total = orderAmount;"), encoding="utf-8")
-    r = subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@e", "commit", "-qam", "fix: split"], capture_output=True, text=True)
+    r = subprocess.run(["git", "commit", "-qam", "fix: split"], capture_output=True, text=True)
     if r.returncode: sys.exit("commit failed: " + r.stdout + r.stderr)
 report.write_text(json.dumps({"state": "ready", "message": "修好了", "pr_title": "fix: split", "pr_body": "body"}), encoding="utf-8")
 print(json.dumps({"type": "result", "session_id": session, "result": "ok", "is_error": False,

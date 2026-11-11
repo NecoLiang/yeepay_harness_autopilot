@@ -175,3 +175,15 @@ def test_workspace_git_errors_are_reported(tmp_path: Path) -> None:
     with pytest.raises(WorkspaceError, match="exited"):
         workspace.git(tmp_path, "rev-parse", "--verify", "no-such-ref")
     assert workspace.publish(tmp_path, "b", "t", "b", draft=False, pr_url="") == ""
+
+
+@pytest.mark.integration
+def test_claude_commits_use_configured_identity_not_global(tmp_path: Path) -> None:
+    checkout = demo(tmp_path)
+    cfg = config(tmp_path, checkout)
+    store = Store(cfg.state_dir / "s.sqlite")
+    engine = Engine(cfg, store, Recorder(), ClaudeRunner(cfg), Workspace(cfg))
+    ticket = engine.drive(engine.open(cli.local_message("修")).id)
+    author = subprocess.run(["git", "-C", ticket.worktree, "log", "-1", "--format=%an <%ae>|%cn <%ce>"],
+                            capture_output=True, text=True).stdout.strip()
+    assert author == "bot <bot@example.com>|bot <bot@example.com>"
